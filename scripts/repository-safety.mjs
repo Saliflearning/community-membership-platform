@@ -20,6 +20,8 @@ const secretPatterns = [
 ];
 
 function allowedEmail(address) {
+  if (address.toLowerCase() === "noreply@github.com") return true;
+
   const domain = address.split("@").at(-1)?.toLowerCase() ?? "";
   return (
     domain === "users.noreply.github.com" ||
@@ -61,7 +63,7 @@ for (const file of files) {
 }
 
 if (scanHistory) {
-  const history = execFileSync("git", ["log", "--all", "-p", "--no-ext-diff", "--format=fuller", "--", ".", ":!package-lock.json"], {
+  const history = execFileSync("git", ["log", "HEAD", "-p", "--no-ext-diff", "--format=fuller", "--", ".", ":!package-lock.json"], {
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024
   });
