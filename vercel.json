@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "installCommand": "npm ci",
+  "env": {
+    "NODE_VERSION": "24"
+  }
+}

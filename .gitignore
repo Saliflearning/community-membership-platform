@@ -1,0 +1,15 @@
+.env
+.env*.local
+.next
+node_modules
+coverage
+dist
+*.log
+tsconfig.tsbuildinfo
+playwright-report
+test-results
+
+# Local Netlify folder
+.netlify
+
+.vercel

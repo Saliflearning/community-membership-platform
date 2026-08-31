@@ -1,0 +1,56 @@
+{
+  "name": "community-membership-platform",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "prebuild": "node scripts/validate-runtime.mjs",
+    "typegen": "next typegen",
+    "validate:env": "tsx scripts/validate-env.ts",
+    "deploy:check": "npm run validate:env && npm run lint && npm run test && npm run build && npm run typecheck",
+    "start": "next start",
+    "lint": "eslint . --max-warnings 0",
+    "test": "tsx --test tests/membership.test.ts",
+    "test:security": "node scripts/security-tests.mjs",
+    "test:e2e": "playwright test",
+    "capture:assets": "cross-env CAPTURE_ASSETS=1 playwright test tests/e2e/showcase.spec.ts --grep \"showcase is read-only\"",
+    "test:safety": "node scripts/repository-safety.mjs",
+    "test:safety:history": "node scripts/repository-safety.mjs --history",
+    "verify": "npm run lint && npm test && npm run test:security && npm run typecheck && npm run build && npm audit --audit-level=high",
+    "typecheck": "npm run typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
+    "next": "16.3.3",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "resend": "^4.0.0",
+    "stripe": "^16.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.10.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.19",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.3.3",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.6",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.26"
+  }
+}
