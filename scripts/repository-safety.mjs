@@ -20,7 +20,7 @@ const secretPatterns = [
 ];
 
 function allowedEmail(address) {
-  if (address.toLowerCase() === "noreply@github.com") return true;
+  if (["noreply@github.com", "support@github.com"].includes(address.toLowerCase())) return true;
 
   const domain = address.split("@").at(-1)?.toLowerCase() ?? "";
   return (
