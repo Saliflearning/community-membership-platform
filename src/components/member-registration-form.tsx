@@ -24,7 +24,7 @@ export function MemberRegistrationForm({
   const [regionCode, setRegionCode] = useState(regions[0]?.code ?? "");
   const selectedRegion = config.regions.find((region) => region.code === regionCode) ?? regions[0];
   const stateCode = selectedRegion?.code.replace(`${countryCode}-`, "") ?? "IN";
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoSelected, setPhotoSelected] = useState(false);
   const [photoStatus, setPhotoStatus] = useState<string>("");
   const [photoPrepared, setPhotoPrepared] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -263,16 +263,15 @@ export function MemberRegistrationForm({
               setPhotoPrepared(false);
               setSubmitError("");
               setPhotoStatus(file ? `${file.name} / ${formatBytes(file.size)}` : "");
-              setPhotoPreview(file ? URL.createObjectURL(file) : null);
+              setPhotoSelected(Boolean(file));
             }}
           />
         </label> : null}
       </div>
 
-      {photoPreview ? (
+      {photoSelected ? (
         <div className="mt-5 flex items-center gap-4 rounded-md border border-slate-200 p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="h-20 w-20 rounded-md object-cover" src={photoPreview} alt="Selected member photo preview" />
+          <div aria-hidden="true" className="grid h-12 w-12 place-items-center rounded-full bg-hub-green text-xl font-black text-white">✓</div>
           <div>
             <p className="text-sm font-semibold text-slate-700">{t.registration.previewReady}</p>
             {photoStatus ? <p className="mt-1 text-xs font-semibold text-slate-500">{photoStatus}</p> : null}
@@ -351,44 +350,39 @@ async function preparePhotoForUpload(file: File) {
     throw new Error("Photo must be 5 MB or smaller before optimization.");
   }
 
-  const image = await loadImage(file);
-  const scale = Math.min(1, photoMaxDimension / Math.max(image.width, image.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-  const context = canvas.getContext("2d");
+  let image: ImageBitmap;
 
-  if (!context) {
-    throw new Error("Photo could not be processed in this browser.");
+  try {
+    image = await createImageBitmap(file);
+  } catch {
+    throw new Error("Photo could not be read.");
   }
 
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  try {
+    const scale = Math.min(1, photoMaxDimension / Math.max(image.width, image.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    const context = canvas.getContext("2d");
 
-  for (const quality of [0.86, 0.78, 0.7, 0.62]) {
-    const blob = await canvasToBlob(canvas, "image/jpeg", quality);
-
-    if (blob.size <= maxStoredPhotoBytes) {
-      return new File([blob], renameAsJpeg(file.name), { type: "image/jpeg" });
+    if (!context) {
+      throw new Error("Photo could not be processed in this browser.");
     }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.86, 0.78, 0.7, 0.62]) {
+      const blob = await canvasToBlob(canvas, "image/jpeg", quality);
+
+      if (blob.size <= maxStoredPhotoBytes) {
+        return new File([blob], renameAsJpeg(file.name), { type: "image/jpeg" });
+      }
+    }
+  } finally {
+    image.close();
   }
 
   throw new Error("Photo is still too large after optimization. Please choose a smaller image.");
-}
-
-function loadImage(file: File) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Photo could not be read."));
-    };
-    image.src = url;
-  });
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
