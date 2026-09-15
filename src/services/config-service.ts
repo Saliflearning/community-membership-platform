@@ -239,12 +239,68 @@ export async function getCommunitySettingByCode(code: string): Promise<Community
   return community;
 }
 
+export const platformConfigSections = [
+  "countries",
+  "regions",
+  "zones",
+  "membershipTiers",
+  "communities",
+  "card",
+  "communityCardTemplates",
+  "physicalCards",
+  "registrationFields",
+  "branding",
+  "notifications",
+  "publicContent"
+] as const satisfies readonly (keyof PlatformConfig)[];
+
+export function isPlatformConfigSection(value: unknown): value is keyof PlatformConfig {
+  return typeof value === "string" && platformConfigSections.some((section) => section === value);
+}
+
 export async function updateConfigSection(section: keyof PlatformConfig, value: PlatformConfig[keyof PlatformConfig]) {
   const current = await getPlatformConfig();
-  platformConfig = {
-    ...current,
-    [section]: value
-  };
+
+  switch (section) {
+    case "countries":
+      platformConfig = { ...current, countries: value as PlatformConfig["countries"] };
+      break;
+    case "regions":
+      platformConfig = { ...current, regions: value as PlatformConfig["regions"] };
+      break;
+    case "zones":
+      platformConfig = { ...current, zones: value as PlatformConfig["zones"] };
+      break;
+    case "membershipTiers":
+      platformConfig = { ...current, membershipTiers: value as PlatformConfig["membershipTiers"] };
+      break;
+    case "communities":
+      platformConfig = { ...current, communities: value as PlatformConfig["communities"] };
+      break;
+    case "card":
+      platformConfig = { ...current, card: value as PlatformConfig["card"] };
+      break;
+    case "communityCardTemplates":
+      platformConfig = { ...current, communityCardTemplates: value as PlatformConfig["communityCardTemplates"] };
+      break;
+    case "physicalCards":
+      platformConfig = { ...current, physicalCards: value as PlatformConfig["physicalCards"] };
+      break;
+    case "registrationFields":
+      platformConfig = { ...current, registrationFields: value as PlatformConfig["registrationFields"] };
+      break;
+    case "branding":
+      platformConfig = { ...current, branding: value as PlatformConfig["branding"] };
+      break;
+    case "notifications":
+      platformConfig = { ...current, notifications: value as PlatformConfig["notifications"] };
+      break;
+    case "publicContent":
+      platformConfig = { ...current, publicContent: value as PlatformConfig["publicContent"] };
+      break;
+    default:
+      throw new Error("Unsupported platform configuration section.");
+  }
 
   platformConfig = normalizeConfig(platformConfig);
 

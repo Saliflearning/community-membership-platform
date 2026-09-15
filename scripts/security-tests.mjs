@@ -20,6 +20,8 @@ const refund = read("src/app/api/admin/payments/[paymentId]/refund/route.ts");
 const rls = read("supabase/migrations/202605110003_storage_rls.sql");
 const headers = read("next.config.mjs");
 const health = read("src/app/api/health/route.ts");
+const configService = read("src/services/config-service.ts");
+const registrationForm = read("src/components/member-registration-form.tsx");
 
 assert.match(env, /CARD_ACCESS_SECRET/);
 assert.doesNotMatch(env, /CARD_ACCESS_SECRET\s*\?\?[\s\S]{0,120}SUPABASE_(?:JWT_SECRET|SERVICE_ROLE_KEY)/);
@@ -47,5 +49,8 @@ assert.match(headers, /Content-Security-Policy/);
 assert.match(headers, /Strict-Transport-Security/);
 assert.match(health, /process\.env\.SHOWCASE_MODE === "true"/);
 assert.match(health, /mode: "showcase"/);
+assert.match(configService, /switch \(section\)/);
+assert.doesNotMatch(configService, /\[section\]: value/);
+assert.doesNotMatch(registrationForm, /URL\.createObjectURL\(file\)/);
 
-console.log("Security architecture assertions passed (25 checks).");
+console.log("Security architecture assertions passed (28 checks).");

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isNextResponse, requireAdminApi } from "@/lib/security/authz";
-import { getPlatformConfig, updateConfigSection } from "@/services/config-service";
+import { getPlatformConfig, isPlatformConfigSection, updateConfigSection } from "@/services/config-service";
 import { logAdminAction } from "@/services/audit-service";
 import type { PlatformConfig } from "@/types/domain";
 
@@ -16,11 +16,11 @@ export async function POST(request: Request) {
   if (isNextResponse(auth)) return auth;
 
   const payload = (await request.json()) as {
-    section?: keyof PlatformConfig;
+    section?: unknown;
     value?: PlatformConfig[keyof PlatformConfig];
   };
 
-  if (!payload.section || payload.value === undefined) {
+  if (!isPlatformConfigSection(payload.section) || payload.value === undefined) {
     return NextResponse.json({ error: "Missing config section or value." }, { status: 422 });
   }
 
